@@ -1,96 +1,202 @@
-# Contributing to wpipe
+# Contributing to WRedis
 
-Thank you for your interest in contributing to wpipe!
+Welcome! We're excited that you're interested in contributing to WRedis.
+
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Environment](#development-environment)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [Submitting Changes](#submitting-changes)
+
+## Code of Conduct
+
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to wisrovi.rodriguez@gmail.com.
 
 ## Getting Started
 
-1. Fork the repository
-2. Clone your fork:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/wpipe.git
-   cd wpipe
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -e ".[dev]"
-   ```
+- Fork the repository
+- Clone your fork: `git clone https://github.com/YOUR_USERNAME/wredis.git`
+- Add upstream: `git remote add upstream https://github.com/wisrovi/wredis.git`
 
-## Development
+## Development Environment
 
-### Running Tests
+### Prerequisites
+
+- Python 3.10+
+- Docker (for running Redis during tests)
+
+### Setup
 
 ```bash
-# Run all tests
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# or
+venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -e ".[dev]"
+
+# Install pre-commit hooks (optional but recommended)
+pre-commit install
+```
+
+### Running Redis
+
+```bash
+# Using Docker Compose
+cd enviroment
+docker-compose up -d
+
+# Or using Makefile
+make start
+```
+
+## Making Changes
+
+1. Create a new branch: `git checkout -b feature/your-feature-name`
+2. Make your changes
+3. Add tests if applicable
+4. Ensure code quality checks pass
+
+## Testing
+
+### Run all tests
+
+```bash
 pytest
-
-# Run with coverage
-pytest --cov=wpipe --cov-report=html
-
-# Run specific test file
-pytest test/test_pipeline.py
 ```
 
-### Code Quality
+### Run with coverage
 
 ```bash
-# Lint with ruff
-ruff check wpipe/
-
-# Type checking with mypy
-mypy wpipe/
-
-# Format code with black
-black wpipe/
+pytest --cov=wredis --cov-fail-under=95 --cov-report=term-missing
 ```
 
-### Running All Quality Checks
+### Run specific test file
 
 ```bash
-ruff check wpipe/ && mypy wpipe/ && pytest
+pytest tests/test_bitmap.py
 ```
 
-## Project Structure
+### Run with Redis (integration tests)
 
-```
-wpipe/
-├── wpipe/
-│   ├── __init__.py
-│   ├── api_client/       # API client for pipeline tracking
-│   ├── exception/        # Custom exceptions
-│   ├── log/              # Logging utilities
-│   ├── pipe/             # Core pipeline implementation
-│   ├── ram/              # Memory limit utilities
-│   ├── sqlite/           # SQLite database utilities
-│   └── util/             # YAML utilities
-├── test/                 # Core library tests
-└── examples/             # Example scripts
-    └── test/             # Example tests
+```bash
+# Ensure Redis is running
+docker-compose -f enviroment/docker-compose.yml up -d
+
+# Run tests
+pytest --integration
 ```
 
-## Writing Tests
+## Code Quality
 
-- All new features should include tests
-- Tests are in `test/` for core functionality
-- Example tests are in `examples/test/`
-- Use descriptive test names: `test_<feature>_<behavior>`
+### Ruff (Linting & Formatting)
 
-## Pull Request Guidelines
+```bash
+# Check for errors
+ruff check .
 
-1. Ensure all tests pass
-2. Run linting: `ruff check wpipe/`
-3. Run type checking: `mypy wpipe/`
-4. Update documentation if needed
-5. Keep changes focused and atomic
+# Fix auto-fixable errors
+ruff check . --fix
 
-## Code Style
+# Format code
+ruff format .
+```
 
-- Follow PEP 8
-- Use type hints where possible
-- Add docstrings to public functions
-- Keep functions small and focused
+### MyPy (Type Checking)
 
-## Reporting Issues
+```bash
+mypy src/wredis
+```
 
-- Use the GitHub issue tracker
-- Include a minimal reproducible example
-- Specify your Python version and OS
+### Pre-commit hooks
+
+```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+```
+
+## Submitting Changes
+
+### Pull Request Process
+
+1. Update documentation if needed
+2. Add tests for new functionality
+3. Ensure all tests pass
+4. Ensure code quality checks pass (ruff, mypy, coverage)
+5. Update CHANGELOG.md with your changes under the `[Unreleased]` section
+6. Submit a Pull Request
+
+### PR Title Format
+
+Use conventional commits format:
+
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation
+- `test:` Tests
+- `refactor:` Code refactoring
+- `chore:` Maintenance
+
+Example: `feat: Add async_cache decorator`
+
+### PR Description
+
+Include:
+- Summary of changes
+- Related issue number (if applicable)
+- Testing performed
+
+## Directory Structure
+
+```
+wredis/
+├── src/wredis/           # Main package
+│   ├── bitmap/          # Bitmap operations
+│   ├── hash/            # Hash operations
+│   ├── pubsub/          # Pub/Sub
+│   ├── queue/           # Queue operations
+│   ├── sets/            # Set operations
+│   ├── sortedset/       # Sorted set operations
+│   ├── streams/         # Stream operations
+│   ├── async_api/       # Async versions of all managers
+│   ├── ha/              # High availability (Sentinel/Cluster)
+│   ├── decorators.py    # @cache, @async_cache decorators
+│   ├── _types.py        # Type aliases
+│   ├── _exceptions.py   # Custom exceptions
+│   └── _connection.py   # Connection factories
+├── tests/               # Test suite
+├── examples/            # Example scripts
+├── enviroment/          # Docker Compose files
+└── site/                # Marketing website
+```
+
+## Common Issues
+
+### Redis Connection Errors
+
+If you get connection errors, ensure Redis is running:
+
+```bash
+docker ps | grep redis
+# If not running:
+docker-compose -f enviroment/docker-compose.yml up -d
+```
+
+### Import Errors
+
+If you get import errors after making changes:
+
+```bash
+pip install -e . --force-reinstall
+```
+
+## Contact
+
+- Email: wisrovi.rodriguez@gmail.com
+- GitHub Issues: https://github.com/wisrovi/wredis/issues
